@@ -2,6 +2,7 @@
 	"name": "charset-auto-select",
 	"displayName": "charset-auto-select",
 	"description": "Using the file -bi from linux to find the correct charset",
+	"repository": "https://github.com/gabrielpetry/charset-auto-select",
 	"version": "0.0.4",
 	"publisher": "gabrielpetryzl",
 	"engines": {
@@ -25,7 +26,7 @@
 		"commands": [
 			{
 				"command": "charset-auto-select.detectCharset",
-				"title": "Detect Charset Petry6"
+				"title": "Detect Charset"
 			}
 		]
 	},
