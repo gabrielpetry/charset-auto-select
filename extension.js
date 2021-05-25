@@ -11,7 +11,7 @@ const loadJsonFile = require('load-json-file');
 const updateJsonFile = require('update-json-file');
 
 let myStatusBarItem
-
+let alreadyOpenedFiles = []
 
 async function detectCharset() {
     console.log(Date())
@@ -19,6 +19,8 @@ async function detectCharset() {
     let editor = vscode.window.activeTextEditor
     if (!editor) return
     let filename = editor.document.fileName
+    if (alreadyOpenedFiles.includes(filename)) return
+    alreadyOpenedFiles.push(filename)
     // @TODO: Ignore based on .ci-charset-exclude
     let filemap = null
     let filemapPath = path.join(path.dirname(filename), '/.charset-auto-select.json')
