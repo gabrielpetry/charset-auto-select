@@ -23,11 +23,11 @@ async function detectCharset() {
     alreadyOpenedFiles.push(filename)
     // @TODO: Ignore based on .ci-charset-exclude
     let filemap = null
-    let filemapPath = path.join(path.dirname(filename), '/.charset-auto-select.json')
-    console.log('path ', filemapPath)
+    let filemapPath = path.join(path.dirname(filename), '/.ci-charset-exclude')
+    let ciCharsetExcludeFiles = []
     if(fs.existsSync(filemapPath)) {
-      filemap = require(path.dirname(filename) + '/.charset-auto-select.json')
-      console.log('loading filemap from workspace', filemap)
+      ciCharsetExcludeFiles = fs.readFileSync(filemapPath).toString().split("\n");
+      // console.log('loading filemap from workspace', filemap)
     }
     console.log('home', homedir)
     let settingsFile = `${homedir}/.config/Code/User/settings.json`
@@ -35,18 +35,15 @@ async function detectCharset() {
 
     exec(`file -bi ${filename} | awk '{print toupper($0)}' | cut -d'=' -f2`, (err, stdout, stderr) => {
       let charset = (stdout.trim().includes('ISO')) ? 'iso88591' : 'utf8'
-      console.log("CHARSETTTTTTTTTTT", charset)
       if (stdout.trim().includes("ASCII")) {
-        if (!filemap || !filemap.ASCII) {
-          vscode.window.showInformationMessage(`Detected ASCII encoding, verify manually`)
-          console.log('no custom filemap for ascii')
-          return
+        charset = 'utf8'
+        if (ciCharsetExcludeFiles != []) {
+          charset = (ciCharsetExcludeFiles.includes(filename)) ? 'iso88591' : 'utf8'
         }
-        charset = filemap.ASCII
-        console.log('using from filemap', filemap)
+        console.log('using from charset based on ci-charset-excluded for ascii file', ciCharsetExcludeFiles)
       }
       console.log('Changing to ', charset)
-    //   vscode.window.showInformationMessage(`Detected stdout: ${stdout}`)
+      //   vscode.window.showInformationMessage(`Detected stdout: ${stdout}`)
       // vscode.window.showInformationMessage(`stdout: ${stdout}`);
       let columnToShowIn = vscode.window.activeTextEditor
                   ? vscode.window.activeTextEditor.viewColumn
