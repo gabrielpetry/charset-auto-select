@@ -14,13 +14,12 @@ let myStatusBarItem
 let alreadyOpenedFiles = []
 
 async function detectCharset() {
-    if (process.platform !== 'linux') {
-      console.log('only linux broh')
-      return;
+    if (process.platform !== 'linux') return // use linux, pls
     }
 
     let editor = vscode.window.activeTextEditor
-    if (!editor) return
+    if (!editor) return // What?
+    
     let filename = editor.document.fileName
     if (alreadyOpenedFiles.includes(filename)) return
     alreadyOpenedFiles.push(filename)
