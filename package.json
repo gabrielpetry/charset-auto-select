@@ -3,7 +3,7 @@
 	"displayName": "charset-auto-select",
 	"description": "Using the file -bi from linux to find the correct charset",
 	"repository": "https://github.com/gabrielpetry/charset-auto-select",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"publisher": "gabrielpetry",
 	"engines": {
 		"vscode": "^1.55.0"
