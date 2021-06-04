@@ -14,7 +14,10 @@ let myStatusBarItem
 let alreadyOpenedFiles = []
 
 async function detectCharset() {
-    console.log(Date())
+    if (process.platform !== 'linux') {
+      console.log('only linux broh')
+      return;
+    }
 
     let editor = vscode.window.activeTextEditor
     if (!editor) return
@@ -65,11 +68,6 @@ async function detectCharset() {
                   vscode.window.showTextDocument(doc, columnToShowIn, false);
               });
           });
-          
-        //   updateJsonFile(settingsFile, config => {
-        //     config['files.encoding'] = 'utf8';
-        //     return config
-        //   })
         }, 1000);
       })
     });

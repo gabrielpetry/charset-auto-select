@@ -21,7 +21,7 @@
 		"onLanguage:cgi",
     "onCommand:charset-auto-select.detectCharset"
 	],
-	"main": "./extension.js",
+	"main": "./src/extension.js",
 	"contributes": {
 		"commands": [
 			{
