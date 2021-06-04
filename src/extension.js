@@ -9,9 +9,11 @@ const homedir = require('os').homedir();
 // your extension is activated the very first time the command is executed
 const loadJsonFile = require('load-json-file');
 const updateJsonFile = require('update-json-file');
+const getFilemapPath = fname => path.join(path.dirname(fname), '/.ci-charset-exclude')
+const readFileSync = fname => fs.readFileSync(fname).toString().split("\n");
+const alreadyOpenedFiles = new Map()
 
-let myStatusBarItem
-let alreadyOpenedFiles = []
+let ciCharsetExcludeFiles = []
 
 async function detectCharset() {
     if (process.platform !== 'linux') return // use linux, pls
@@ -20,45 +22,43 @@ async function detectCharset() {
     if (!editor) return // What?
     
     let filename = editor.document.fileName
-    if (alreadyOpenedFiles.includes(filename)) return
-    alreadyOpenedFiles.push(filename)
-    // @TODO: Ignore based on .ci-charset-exclude
-    let filemap = null
-    let filemapPath = path.join(path.dirname(filename), '/.ci-charset-exclude')
-    let ciCharsetExcludeFiles = []
-    if(fs.existsSync(filemapPath)) {
-      ciCharsetExcludeFiles = fs.readFileSync(filemapPath).toString().split("\n");
-      // console.log('loading filemap from workspace', filemap)
-    }
-    console.log('home', homedir)
-    let settingsFile = `${homedir}/.config/Code/User/settings.json`
-    console.log('settings file', settingsFile)
+    if (alreadyOpenedFiles.has(filename)) return
+    alreadyOpenedFiles.set(filename, true) // save the file as cached
+    setTimeout(() => alreadyOpenedFiles.remove(filename), 10000) // just in case
+    
+    const filemapPath = getFilemapPath(filename)
+    if(fs.existsSync(filemapPath))
+      ciCharsetExcludeFiles = readFileSync(filemapPath)
 
-    exec(`file -bi ${filename} | awk '{print toupper($0)}' | cut -d'=' -f2`, (err, stdout, stderr) => {
+    let settingsFile = `${homedir}/.config/Code/User/settings.json`
+
+    const checkCharsteCommand = `file -bi ${filename} | awk '{print toupper($0)}' | cut -d'=' -f2`
+    exec(checkCharsteCommand, (err, stdout, stderr) => {
       let charset = (stdout.trim().includes('ISO')) ? 'iso88591' : 'utf8'
       if (stdout.trim().includes("ASCII")) {
-        charset = 'utf8'
+        charset = 'utf8' // default for ascii is utf8
         if (ciCharsetExcludeFiles != []) {
           charset = (ciCharsetExcludeFiles.includes(filename)) ? 'iso88591' : 'utf8'
         }
         console.log('using from charset based on ci-charset-excluded for ascii file', ciCharsetExcludeFiles)
       }
       console.log('Changing to ', charset)
-      //   vscode.window.showInformationMessage(`Detected stdout: ${stdout}`)
-      // vscode.window.showInformationMessage(`stdout: ${stdout}`);
       let columnToShowIn = vscode.window.activeTextEditor
-                  ? vscode.window.activeTextEditor.viewColumn
-                  : undefined;
+        ? vscode.window.activeTextEditor.viewColumn
+        : undefined;
 
       loadJsonFile(settingsFile).then((config) => {
+        // if okay, nothing else to do
         if (config['files.encoding'] == charset) return
 
+        // update the settings file
         updateJsonFile(settingsFile, config => {
           config['files.encoding'] = charset;
           delete config["files.autoGuessEncoding"];
           return config
         })
 
+        // reopen the file with the correct charset.
         setTimeout(() => {
           vscode.window.showInformationMessage(`Reopening in corect charset ${charset}`)
           vscode.commands.executeCommand('workbench.action.closeActiveEditor').then(() => {
@@ -75,22 +75,9 @@ async function detectCharset() {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "charset-auto-select" is now active!');
-    
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	// let disposable = vscode.commands.registerCommand(
-    // 'charset-auto-select.detectCharset',
-    // detectCharset);
-
-    // let disposable = vscode.languages.registerCodeActionsProvider({ scheme: 'file', language: 'PHP' }, detectCharset)
     let disposable = vscode.window.onDidChangeActiveTextEditor(e => detectCharset())
 	// context.subscriptions.push(disposable);
-     detectCharset()
+    detectCharset()
 }
 
 // this method is called when your extension is deactivated
@@ -98,6 +85,6 @@ function deactivate() {return undefined}
 
 module.exports = {
 	activate,
-	deactivate,
+    deactivate,
     detectCharset
 }
