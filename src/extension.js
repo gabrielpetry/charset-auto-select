@@ -38,7 +38,7 @@ async function detectCharset() {
       if (stdout.trim().includes("ASCII")) {
         charset = 'utf8' // default for ascii is utf8
         if (ciCharsetExcludeFiles != []) {
-          charset = (ciCharsetExcludeFiles.includes(filename)) ? 'iso88591' : 'utf8'
+          charset = (!ciCharsetExcludeFiles.includes(filename)) ? 'iso88591' : 'utf8'
         }
         console.log('using from charset based on ci-charset-excluded for ascii file', ciCharsetExcludeFiles)
       }
