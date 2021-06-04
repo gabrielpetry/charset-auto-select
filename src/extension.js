@@ -15,7 +15,6 @@ let alreadyOpenedFiles = []
 
 async function detectCharset() {
     if (process.platform !== 'linux') return // use linux, pls
-    }
 
     let editor = vscode.window.activeTextEditor
     if (!editor) return // What?
