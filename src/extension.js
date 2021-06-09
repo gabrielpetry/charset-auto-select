@@ -24,7 +24,7 @@ async function detectCharset() {
     let filename = editor.document.fileName
     if (alreadyOpenedFiles.has(filename)) return
     alreadyOpenedFiles.set(filename, true) // save the file as cached
-    setTimeout(() => alreadyOpenedFiles.remove(filename), 10000) // just in case
+    setTimeout(() => alreadyOpenedFiles.delete(filename), 10000) // just in case
     
     const filemapPath = getFilemapPath(filename)
     if(fs.existsSync(filemapPath))
@@ -37,10 +37,10 @@ async function detectCharset() {
       let charset = (stdout.trim().includes('ISO')) ? 'iso88591' : 'utf8'
       if (stdout.trim().includes("ASCII")) {
         charset = 'utf8' // default for ascii is utf8
-        if (ciCharsetExcludeFiles != []) {
+        if (ciCharsetExcludeFiles.length > 0) {
           charset = (!ciCharsetExcludeFiles.includes(filename)) ? 'iso88591' : 'utf8'
-        }
-        console.log('using from charset based on ci-charset-excluded for ascii file', ciCharsetExcludeFiles)
+          console.log('using from charset based on ci-charset-excluded for ascii file', ciCharsetExcludeFiles)
+      }
       }
       console.log('Changing to ', charset)
       let columnToShowIn = vscode.window.activeTextEditor
