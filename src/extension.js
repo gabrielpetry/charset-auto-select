@@ -24,7 +24,7 @@ async function detectCharset() {
     let filename = editor.document.fileName
     if (alreadyOpenedFiles.has(filename)) return
     alreadyOpenedFiles.set(filename, true) // save the file as cached
-    setTimeout(() => alreadyOpenedFiles.delete(filename), 10000) // just in case
+    // setTimeout(() => alreadyOpenedFiles.delete(filename), 10000) // just in case
     
     const filemapPath = getFilemapPath(filename)
     if(fs.existsSync(filemapPath))
