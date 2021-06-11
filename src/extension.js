@@ -24,7 +24,7 @@ async function detectCharset() {
     let filename = editor.document.fileName
     if (alreadyOpenedFiles.has(filename)) return
     alreadyOpenedFiles.set(filename, true) // save the file as cached
-    // setTimeout(() => alreadyOpenedFiles.delete(filename), 10000) // just in case
+    
     
     const filemapPath = getFilemapPath(filename)
     if(fs.existsSync(filemapPath))
@@ -61,6 +61,7 @@ async function detectCharset() {
         // reopen the file with the correct charset.
         setTimeout(() => {
           vscode.window.showInformationMessage(`Reopening in corect charset ${charset}`)
+          setTimeout(() => alreadyOpenedFiles.delete(filename), 3000) // just in case
           vscode.commands.executeCommand('workbench.action.closeActiveEditor').then(() => {
               vscode.workspace.openTextDocument(filename).then((doc) => {
                   vscode.window.showTextDocument(doc, columnToShowIn, false);
